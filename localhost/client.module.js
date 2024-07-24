@@ -77,13 +77,13 @@ let f_s_glsl_from_o_shader = function(
     let n_idx2 = s_code.indexOf('//IMPORTANT END', n_idx1);
     if(n_idx1 != -1 && n_idx2!=-1){
         return `
+        // const vec4 iMouse = iMouse;
+        // const float iTime = iDate.w;
+        // const vec2 iResolution = iResolution;
+        // const vec2 fragCoord = gl_FragCoord.xy;
+        // const vec4 iDate = iDate;
         ${s_code.substring(0, n_idx1)}
         void main() {
-            vec4 iMouse = o_mouse;
-            float iTime = o_time.w;
-            vec2 iResolution = o_vec2_scale_canvas;
-            vec2 fragCoord = gl_FragCoord.xy;
-            vec4 iDate = o_time;
         ${s_code.substring(n_idx2)}
         `
     }else{
@@ -107,15 +107,23 @@ let f_update_shader = function(){
         precision mediump float;
         in vec2 o_trn_nor_pixel;
         out vec4 fragColor;
-        uniform vec4 o_time;
-        uniform vec4 o_mouse;
-        uniform vec2 o_vec2_scale_canvas;
+        uniform vec4 iMouse;
+        uniform float iTime;
+        uniform vec2 iResolution;
+        uniform vec4 iDate;
     
-        ${f_s_glsl_from_o_shader(o_state.o_shader)}`
+        ${o_state.o_shader.Shader.renderpass[0].code}
+        
+        void main() {
+            vec2 fragCoord = gl_FragCoord.xy;
+            mainImage(fragColor, fragCoord);  
+        }
+        `
     )
-    o_state.o_ufloc__o_vec2_scale_canvas = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'o_vec2_scale_canvas');
-    o_state.o_ufloc__o_time = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'o_time');
-    o_state.o_ufloc__o_mouse = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'o_mouse');
+    o_state.o_ufloc__iResolution = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'iResolution');
+    o_state.o_ufloc__iDate = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'iDate');
+    o_state.o_ufloc__iMouse = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'iMouse');
+    o_state.o_ufloc__iTime = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'iTime');
 
     f_resize()
 }
@@ -126,7 +134,6 @@ let f_update_shader = function(){
 // o_canvas.style.height = '100vh';
 let f_resize = function(){
     if(o_webgl_program){
-        console.log(o_webgl_program)
         // this will resize the canvas and also update 'o_scl_canvas'
         f_resize_canvas_from_o_webgl_program(
             o_webgl_program,
@@ -134,7 +141,7 @@ let f_resize = function(){
             window.innerHeight
         )
     
-        o_webgl_program?.o_ctx.uniform2f(o_state.o_ufloc__o_vec2_scale_canvas,
+        o_webgl_program?.o_ctx.uniform2f(o_state.o_ufloc__iResolution,
             window.innerWidth, 
             window.innerHeight
         );
@@ -186,7 +193,7 @@ let f_raf = function(){
         let o_date = new Date();
         let n_sec_of_the_day_because_utc_timestamp_does_not_fit_into_f32_value = (o_date.getTime()/1000.)%(60*60*24)
         // n_sec_of_the_day_because_utc_timestamp_does_not_fit_into_f32_value = (60*60*24)-1 //test
-        o_webgl_program?.o_ctx.uniform4f(o_state.o_ufloc__o_time,
+        o_webgl_program?.o_ctx.uniform4f(o_state.o_ufloc__iDate,
             o_date.getUTCFullYear(),
             o_date.getUTCMonth(), 
             o_date.getUTCDate(),
@@ -198,8 +205,12 @@ let f_raf = function(){
             clickX,
             clickY
         );
-        let s_time = `${f_s_hms__from_n_ts_ms_utc(o_date.getTime())}.${((o_date.getTime()/1000)%1).toFixed(3).split('.').pop()}`
-        o_el_time.innerText = s_time
+        o_webgl_program?.o_ctx.uniform1f( o_state.o_ufloc__iTime,
+            n_sec_of_the_day_because_utc_timestamp_does_not_fit_into_f32_value
+        );
+       
+        let s_time = `${f_s_hms__from_n_ts_ms_utc(o_date.getTime(), 'UTC')}.${((o_date.getTime()/1000)%1).toFixed(3).split('.').pop()}`
+        o_el_time.innerText = `UTC: ${s_time}`
     
         let n_ms = window.performance.now()
         let n_ms_delta = Math.abs(n_ms_update_time_last - n_ms);

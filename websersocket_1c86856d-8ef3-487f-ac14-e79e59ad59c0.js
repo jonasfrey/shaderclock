@@ -25,7 +25,10 @@ let a_o_ws_client = []
 
 let s_api_key = `rtrjRM`
 let s_path_abs_folder_cached_shaders = './localhost/cached_shaders';
-await ensureDir(s_path_abs_folder_cached_shaders)
+if(!b_deno_deploy){
+
+    await ensureDir(s_path_abs_folder_cached_shaders)// deno deploy is read only...
+}
 
 let f_handler = async function(o_request){
 
@@ -112,14 +115,17 @@ let f_handler = async function(o_request){
             }else{
                 b_update = true
             }
+
             if(b_update){
                 let o_resp = await fetch(`https://www.shadertoy.com/api/v1/shaders/${s}?key=${s_api_key}`)
                 o = await o_resp.json();
                 let s_name_file_shader = `${o.Shader.info.id}_${n_ms_now}.json`
-                await Deno.writeTextFile(
-                    `${s_path_abs_folder_cached_shaders}/${s_name_file_shader}`, 
-                    JSON.stringify(o)
-                )
+                if(!b_deno_deploy){
+                    await Deno.writeTextFile(
+                        `${s_path_abs_folder_cached_shaders}/${s_name_file_shader}`, 
+                        JSON.stringify(o)
+                    )
+                }
             }
             return o
         }));

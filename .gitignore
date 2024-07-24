@@ -1,4 +1,5 @@
-/localhost/cached_shaders
+!/localhost/cached_shaders/
+/localhost/cached_shaders/*
 /gitignored/
 *.gitignored.*
 .gitignored.*/

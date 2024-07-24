@@ -8,8 +8,11 @@ import {
     O_ws_client
 } from "./classes.module.js"
 
-import { f_o_config } from "./functions.module.js";
 
+import { f_o_config } from "./functions.module.js";
+import {
+    f_a_o_entry__from_s_path
+} from "https://deno.land/x/handyhelpers@4.0.7/mod.js"
 
 let s_path_abs_file_current = new URL(import.meta.url).pathname;
 let s_path_abs_folder_current = s_path_abs_file_current.split('/').slice(0, -1).join('/');
@@ -21,16 +24,8 @@ let a_o_ws_client = []
 // console.log({o_config});
 
 let s_api_key = `rtrjRM`
-let o_resp = await fetch(`https://www.shadertoy.com/api/v1/shaders/query/shaderclockdenodev?key=${s_api_key}`)
-let o = await o_resp.json();
-console.log(o)
-let a_s_id_shader = o.Results;
-let a_o_shader = await Promise.all(a_s_id_shader.map(async s=>  {
-    let o_resp = await fetch(`https://www.shadertoy.com/api/v1/shaders/${s}?key=${s_api_key}`)
-    let o = await o_resp.json();
-    return o
-}))
-console.log(a_o_shader)
+let s_path_abs_folder_cached_shaders = './localhost/cached_shaders';
+
 let f_handler = async function(o_request){
 
     // websocket 'request' handling here
@@ -86,6 +81,55 @@ let f_handler = async function(o_request){
             { 
                 headers: {
                     'Content-type': "text/html"
+                }
+            }
+        );
+    }
+    if(o_url.pathname == '/f_a_o_shader'){
+        let n_ms_now = new Date().getTime();
+        let n_ms_cache = 1000*60*5;
+        let o_resp = await fetch(`https://www.shadertoy.com/api/v1/shaders/query/shaderclockdenodev?key=${s_api_key}`)
+        let o = await o_resp.json();
+        // console.log(o)
+        let a_s_id_shader = o.Results;
+        let a_o_entry = await f_a_o_entry__from_s_path(s_path_abs_folder_cached_shaders);
+        let a_o_shader = await Promise.all(a_s_id_shader.map(async s=>  {
+            let b_update = false;
+            let o_entry = a_o_entry.find(o=>{
+                return o.name.includes(s) // name is `${s_id_shader}_${n_ms_ts}` McsyD2_1721819206283.json
+            });
+            let o = null;
+
+            if(o_entry){
+                let n_ms = o_entry.name.split('_').pop();
+                let n_ms_delta = Math.abs(n_ms-n_ms_now);
+                if(n_ms_delta > n_ms_cache){
+                    b_update = true
+                }else{
+                    o = JSON.parse(await Deno.readTextFile(o_entry.s_path_file));
+                }
+            }else{
+                b_update = true
+            }
+            if(b_update){
+                let o_resp = await fetch(`https://www.shadertoy.com/api/v1/shaders/${s}?key=${s_api_key}`)
+                o = await o_resp.json();
+                let s_name_file_shader = `${o.Shader.info.id}_${n_ms_now}.json`
+                await Deno.writeTextFile(
+                    `${s_path_abs_folder_cached_shaders}/${s_name_file_shader}`, 
+                    JSON.stringify(o)
+                )
+            }
+            return o
+        }));
+        // await Deno.writeTextFile('./localhost/a_o_shader.json', JSON.stringify(a_o_shader))
+        // console.log(a_o_shader)
+
+        return new Response(
+            JSON.stringify(a_o_shader),
+            { 
+                headers: {
+                    'Content-type': "application/json"
                 }
             }
         );

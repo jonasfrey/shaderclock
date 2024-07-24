@@ -79,6 +79,7 @@ let f_s_glsl_from_o_shader = function(
         return `
         ${s_code.substring(0, n_idx1)}
         void main() {
+            vec4 iMouse = o_mouse;
             float iTime = o_time.w;
             vec2 iResolution = o_vec2_scale_canvas;
             vec2 fragCoord = gl_FragCoord.xy;
@@ -107,12 +108,14 @@ let f_update_shader = function(){
         in vec2 o_trn_nor_pixel;
         out vec4 fragColor;
         uniform vec4 o_time;
+        uniform vec4 o_mouse;
         uniform vec2 o_vec2_scale_canvas;
     
         ${f_s_glsl_from_o_shader(o_state.o_shader)}`
     )
     o_state.o_ufloc__o_vec2_scale_canvas = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'o_vec2_scale_canvas');
     o_state.o_ufloc__o_time = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'o_time');
+    o_state.o_ufloc__o_mouse = o_webgl_program?.o_ctx.getUniformLocation(o_webgl_program?.o_shader__program, 'o_mouse');
 
     f_resize()
 }
@@ -147,6 +150,29 @@ window.addEventListener('resize', ()=>{
 let n_id_raf = 0;
 
 
+let mouseX = 0;
+let mouseY = 0;
+let clickX = 0;
+let clickY = 0;
+let isMouseDown = false;
+
+// Event listener for mouse move
+o_canvas.addEventListener('mousemove', (event) => {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+});
+
+// Event listener for mouse down
+o_canvas.addEventListener('mousedown', (event) => {
+    isMouseDown = true;
+    clickX = event.clientX;
+    clickY = event.clientY;
+});
+
+// Event listener for mouse up
+o_canvas.addEventListener('mouseup', () => {
+    isMouseDown = false;
+});
 
 let o_el_time = document.createElement('div');
 o_el_time.id = 'o_el_time'
@@ -165,6 +191,12 @@ let f_raf = function(){
             o_date.getUTCMonth(), 
             o_date.getUTCDate(),
             n_sec_of_the_day_because_utc_timestamp_does_not_fit_into_f32_value
+        );
+        o_webgl_program?.o_ctx.uniform4f(o_state.o_ufloc__i_mouse,
+            isMouseDown ? mouseX : 0.0,
+            isMouseDown ? mouseY : 0.0,
+            clickX,
+            clickY
         );
         let s_time = `${f_s_hms__from_n_ts_ms_utc(o_date.getTime())}.${((o_date.getTime()/1000)%1).toFixed(3).split('.').pop()}`
         o_el_time.innerText = s_time

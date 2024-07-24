@@ -20,6 +20,17 @@ let a_o_ws_client = []
 // let o_config = await f_o_config();
 // console.log({o_config});
 
+let s_api_key = `rtrjRM`
+let o_resp = await fetch(`https://www.shadertoy.com/api/v1/shaders/query/shaderclockdenodev?key=${s_api_key}`)
+let o = await o_resp.json();
+console.log(o)
+let a_s_id_shader = o.Results;
+let a_o_shader = await Promise.all(a_s_id_shader.map(async s=>  {
+    let o_resp = await fetch(`https://www.shadertoy.com/api/v1/shaders/${s}?key=${s_api_key}`)
+    let o = await o_resp.json();
+    return o
+}))
+console.log(a_o_shader)
 let f_handler = async function(o_request){
 
     // websocket 'request' handling here

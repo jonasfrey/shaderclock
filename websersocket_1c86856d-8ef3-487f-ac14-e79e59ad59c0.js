@@ -7,7 +7,7 @@ import {
 import {
     O_ws_client
 } from "./classes.module.js"
-
+import { ensureDir } from "https://deno.land/std@0.224.0/fs/ensure_dir.ts";
 
 import { f_o_config } from "./functions.module.js";
 import {
@@ -25,6 +25,7 @@ let a_o_ws_client = []
 
 let s_api_key = `rtrjRM`
 let s_path_abs_folder_cached_shaders = './localhost/cached_shaders';
+await ensureDir(s_path_abs_folder_cached_shaders)
 
 let f_handler = async function(o_request){
 

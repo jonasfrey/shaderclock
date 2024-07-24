@@ -194,6 +194,7 @@ window.onpointermove = function(){
 }
 window.onpointerdown = function(){
     o_state.n_idx_a_o_shader = (o_state.n_idx_a_o_shader+1)% o_state.a_o_shader.length;
+    o_state.o_shader = o_state.a_o_shader[o_state.n_idx_a_o_shader]
     f_update_shader();
 }
 f_update_shader()

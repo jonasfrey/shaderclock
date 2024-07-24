@@ -96,7 +96,10 @@ let f_handler = async function(o_request){
         let o = await o_resp.json();
         // console.log(o)
         let a_s_id_shader = o.Results;
-        let a_o_entry = await f_a_o_entry__from_s_path(s_path_abs_folder_cached_shaders);
+        let a_o_entry = []
+        if(!b_deno_deploy){
+            a_o_entry = await f_a_o_entry__from_s_path(s_path_abs_folder_cached_shaders);
+        }
         let a_o_shader = await Promise.all(a_s_id_shader.map(async s=>  {
             let b_update = false;
             let o_entry = a_o_entry.find(o=>{

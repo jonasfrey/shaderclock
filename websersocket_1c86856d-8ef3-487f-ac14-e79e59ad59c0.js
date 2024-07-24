@@ -30,10 +30,11 @@ let f_o_fetch_cached = async function(
     if(b_update){
         let o_resp = await fetch(...a_v_param.slice(1));
         let o_data = await o_resp.json();
-        o = await o_kv.set([a_v_param[1]], {
+        let o = {
             n_ms: n_ms_now, 
             o_data
-        }); 
+        };
+        let b_res = await o_kv.set([a_v_param[1]], o); 
     }
     return o.value.o_data
 }

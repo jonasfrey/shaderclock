@@ -22,8 +22,11 @@ import {
     f_s_hms__from_n_ts_ms_utc,
 } from "https://deno.land/x/date_functions@1.4/mod.js"
 
-let a_o_shader = await(await fetch('./f_a_o_shader')).json(); 
-let n_idx_a_o_shader = parseInt(Math.random()*a_o_shader.length)
+let a_o_shader = await(await fetch(`./f_a_o_shader${window.location.hash}`)).json(); 
+a_o_shader = a_o_shader.sort((o1, o2)=>{
+    return o2.Shader.info.date - o1.Shader.info.date
+})
+let n_idx_a_o_shader = 0;
 let o_state = {
     n_idx_a_o_shader,
     a_o_shader,

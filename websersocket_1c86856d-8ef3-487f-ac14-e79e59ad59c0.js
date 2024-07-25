@@ -36,7 +36,7 @@ let f_o_fetch_cached = async function(
         };
         let b_res = await o_kv.set([a_v_param[1]], o); 
     }
-    return o.value.o_data
+    return o?.value?.o_data
 }
 
 const o_kv = await Deno.openKv();
@@ -110,19 +110,25 @@ let f_handler = async function(o_request){
         );
     }
     if(o_url.pathname == '/f_a_o_shader'){
+        let n_ms_cache = (
+            o_url.href.includes('#nocache')
+        ) ? 0 : 1000*60*5;
         let n_ms_now = new Date().getTime();
-        let n_ms_cache = 1000*60*5;
         let o = await f_o_fetch_cached(
-            1000*60*5,
+            n_ms_cache,
             `https://www.shadertoy.com/api/v1/shaders/query/shaderclockdenodev?key=${s_api_key}`
         );
         // console.log(o)
-        let a_s_id_shader = o.Results;
+        let a_s_id_shader = [
+            ...o.Results,
+            'Dds3WB' 
+            //manually added shaders, (shader must be set to 'public + api' )
+        ];
 
         let a_o_shader = await Promise.all(a_s_id_shader.map(async s_shader_id=>  {
 
             let o = await f_o_fetch_cached(
-                1000*60*5,
+                n_ms_cache,
                 `https://www.shadertoy.com/api/v1/shaders/${s_shader_id}?key=${s_api_key}`
             )
 

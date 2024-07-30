@@ -121,7 +121,7 @@ let f_handler = async function(o_request){
         // console.log(o)
         let a_s_id_shader = [
             ...o.Results,
-            'Dds3WB' 
+            //'Dds3WB' 
             //manually added shaders, (shader must be set to 'public + api' )
         ];
 

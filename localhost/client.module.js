@@ -238,8 +238,15 @@ window.onpointermove = function(){
         o_el_time.style.display = 'none'
     },5000)
 }
-window.onpointerdown = function(){
-    o_state.n_idx_a_o_shader = (o_state.n_idx_a_o_shader+1)% o_state.a_o_shader.length;
+window.onpointerdown = function(o_e){
+    let n_summand = 1.;
+    if(o_e.clientX > (window.innerWidth/2.)){
+        n_summand = -1;
+    }
+    o_state.n_idx_a_o_shader = (o_state.n_idx_a_o_shader+n_summand)% o_state.a_o_shader.length;
+    if(o_state.n_idx_a_o_shader < 0){
+        o_state.n_idx_a_o_shader = o_state.a_o_shader.length-1;
+    }
     o_state.o_shader = o_state.a_o_shader[o_state.n_idx_a_o_shader]
     f_update_shader();
 }
